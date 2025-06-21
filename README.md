@@ -1,5 +1,4 @@
-﻿```markdown
-# KafkaStockFlow
+﻿# KafkaStockFlow
 
 ## Table of Contents
 - [Project Overview](#project-overview)
@@ -45,7 +44,6 @@ KafkaStockFlow is a real-time stock data processing application built on .NET 9 
 ## Project Structure
 
 
-
 ```
 KafkaStockFlow/
 ├── Program.cs                   # Main application entry point
@@ -64,7 +62,6 @@ KafkaStockFlow/
     ├── JsonSerializer.cs        # JSON serializer for producer
     └── JsonDeserializer.cs      # JSON deserializer for consumer
 
-
 ```
 
 ## Kafka Installation & Setup
@@ -79,38 +76,34 @@ KafkaStockFlow/
 1. **Download and Extract Kafka**:
    
 
-```
-   wget https://downloads.apache.org/kafka/3.6.1/kafka_2.13-3.6.1.tgz
-   tar -xzf kafka_2.13-3.6.1.tgz
-   cd kafka_2.13-3.6.1
-   
+```shell
+wget https://downloads.apache.org/kafka/3.6.1/kafka_2.13-3.6.1.tgz
+tar -xzf kafka_2.13-3.6.1.tgz
+cd kafka_2.13-3.6.1
 
 ```
 
 2. **Start ZooKeeper**:
    
 
-```
-   bin/zookeeper-server-start.sh config/zookeeper.properties
-   
+```shell
+bin/zookeeper-server-start.sh config/zookeeper.properties
 
 ```
 
 3. **Start Kafka Server** (in a new terminal):
    
 
-```
-   bin/kafka-server-start.sh config/server.properties
-   
+```shell
+bin/kafka-server-start.sh config/server.properties
 
 ```
 
 4. **Create a Topic** (replace `stock-trades` with your topic name):
    
 
-```
-   bin/kafka-topics.sh --create --topic stock-trades --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
-   
+```shell
+bin/kafka-topics.sh --create --topic stock-trades --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
 
 ```
 
@@ -121,8 +114,7 @@ Alternatively, you can use Docker Compose for a containerized setup:
 1. Create a `docker-compose.yml` file:
 
 
-
-```
+```yaml
 version: '3'
 services:
   zookeeper:
@@ -151,18 +143,16 @@ services:
 2. Start the services:
    
 
-```
-   docker-compose up -d
-   
+```shell
+docker-compose up -d
 
 ```
 
 3. Create a topic:
    
 
-```
-   docker exec kafka kafka-topics --create --topic stock-trades --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1
-   
+```shell
+docker exec kafka kafka-topics --create --topic stock-trades --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1
 
 ```
 
@@ -171,8 +161,7 @@ services:
 Update the `appsettings.json` file with your Kafka settings and Alpha Vantage API key:
 
 
-
-```
+```json
 {
   "Kafka": {
     "BootstrapServers": "localhost:9092",
@@ -185,7 +174,6 @@ Update the `appsettings.json` file with your Kafka settings and Alpha Vantage AP
   }
 }
 
-
 ```
 
 ## How to Run the Project
@@ -195,19 +183,17 @@ Update the `appsettings.json` file with your Kafka settings and Alpha Vantage AP
 1. **Clone the repository**:
    
 
-```
-   git clone https://github.com/yourusername/KafkaStockFlow.git
-   cd KafkaStockFlow
-   
+```shell
+git clone https://github.com/yourusername/KafkaStockFlow.git
+cd KafkaStockFlow
 
 ```
 
 2. **Restore dependencies**:
    
 
-```
-   dotnet restore
-   
+```shell
+dotnet restore
 
 ```
 
@@ -218,18 +204,16 @@ Update the `appsettings.json` file with your Kafka settings and Alpha Vantage AP
 1. **Build the project**:
    
 
-```
-   dotnet build
-   
+```shell
+dotnet build
 
 ```
 
 2. **Run the application**:
    
 
-```
-   dotnet run
-   
+```shell
+dotnet run
 
 ```
 
@@ -245,15 +229,14 @@ Update the `appsettings.json` file with your Kafka settings and Alpha Vantage AP
 - **Kafka Connection Issues**: Ensure Kafka and ZooKeeper are running and check the bootstrap server address in `appsettings.json`.
 - **Alpha Vantage API Limits**: Free API keys have usage limits. If you encounter errors, you might need to wait or obtain a premium API key.
 - **Consumer Group Already Exists**: If you see warnings about consumer groups, you can reset offsets or use a new group ID in the configuration.
-- **JVM Memory Issues**: If Kafka crashes due to memory constraints, adjust the JVM heap size in Kafka's `kafka-server-start.sh` script.
-- **Network Connectivity**: Verify that there are no firewall rules blocking the required ports (9092 for Kafka, 2181 for ZooKeeper).
-- **CSV File Access**: Ensure the application has write permissions to the ConsumedTrades directory.
-- **Schema Errors**: If messages fail to serialize/deserialize, check that your `TradeEvent` model matches the data coming from Alpha Vantage.
+- **Port Conflicts**: If ports 9092 or 2181 are already in use, configure different ports in Kafka/ZooKeeper settings.
+- **Message Serialization Errors**: Ensure the TradeEvent model properties match the data structure expected in serialization/deserialization.
+- **Missing Dependencies**: Run `dotnet restore` if you encounter assembly loading exceptions.
+- **File Permission Issues**: Ensure the application has write permissions to the ConsumedTrades directory.
 
 ## Project Communication Flow
 
 ### Data Flow Architecture
-
 
 
 ```
@@ -267,7 +250,6 @@ Update the `appsettings.json` file with your Kafka settings and Alpha Vantage AP
                                                               │  CSV Export     │
                                                               │  (ConsumedTrades)│
                                                               └─────────────────┘
-
 
 ```
 
@@ -298,95 +280,122 @@ Update the `appsettings.json` file with your Kafka settings and Alpha Vantage AP
 ## Testing
 
 ### Unit Testing
-- Unit tests are available in the `KafkaStockFlow.Tests` project.
-- Tests cover individual components including serialization/deserialization and service logic.
-- Use the following command to run unit tests:
+The project includes unit tests to verify individual components:
 
 
-```
+```shell
+# Run all tests
 dotnet test
+
+# Run specific test category
+dotnet test --filter Category=Unit
 
 ```
 
 ### Integration Testing
-- Integration tests verify the interaction between components and Kafka.
-- These tests require a running Kafka instance (use the Docker setup for tests).
-- Run integration tests with:
+Integration tests verify the interaction between components and external systems:
 
+1. **Kafka Integration Tests**:
+   - Tests require a running Kafka instance (use Docker setup)
+   - Verifies connectivity, message publishing, and consumption
+   - Validates serialization/deserialization processes
 
-```
-dotnet test --filter Category=Integration
-
-```
+2. **API Integration Tests**:
+   - Tests Alpha Vantage API connectivity
+   - Validates API response parsing
+   - Includes mock responses for offline testing
 
 ### Performance Testing
-- A simple load test script is available in the `Tools/LoadTester` directory.
-- This helps simulate high message throughput to verify system stability:
+Load testing scripts are available to validate system performance under high volume:
 
 
-```
-dotnet run --project Tools/LoadTester -- --messages 10000 --rate 100
-
-```
-
-### Test Data
-- Sample test data is included in the `TestData` directory.
-- Use this data to verify consumer behavior without API calls:
-
+```shell
+# Run performance test with 1000 messages
+dotnet run --project tests/KafkaStockFlow.LoadTests -- --count 1000
 
 ```
-dotnet run -- --use-test-data
 
-```
+### Testing Best Practices
+- Keep unit tests isolated from external dependencies
+- Use mock objects for external services in unit tests
+- Run integration tests in CI/CD pipelines with dedicated environments
+- Monitor performance metrics during load testing
 
 ## Deployment
 
-### Prerequisites for Deployment
-- Target environment must have .NET 9 runtime installed
-- Kafka cluster must be accessible from the application
-- Network configuration must allow connections to Alpha Vantage API
+### Local Deployment
+For local development and testing:
+
+
+```shell
+dotnet publish -c Release
+cd bin/Release/net9.0/publish
+dotnet KafkaStockFlow.dll
+
+```
 
 ### Docker Deployment
+Package the application in a container for portable deployment:
 
-1. **Build Docker image**:
+1. **Create Dockerfile**:
 
+
+```docker
+FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
+WORKDIR /app
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+COPY ["KafkaStockFlow.csproj", "./"]
+RUN dotnet restore "KafkaStockFlow.csproj"
+COPY . .
+RUN dotnet build "KafkaStockFlow.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "KafkaStockFlow.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "KafkaStockFlow.dll"]
 
 ```
+
+2. **Build and run container**:
+
+
+```shell
 docker build -t kafkastockflow:latest .
-
-```
-
-2. **Run the container**:
-
-
-```
 docker run -d --name kafkastockflow \
-  -e "Kafka__BootstrapServers=your-kafka-server:9092" \
+  -e "Kafka__BootstrapServers=kafka:9092" \
   -e "AlphaVantage__ApiKey=YOUR_API_KEY" \
-  -v /path/to/output:/app/ConsumedTrades \
   kafkastockflow:latest
 
 ```
 
-### Cloud Deployment
+### Cloud Deployment Options
 
-The application can be deployed as a service on various cloud platforms:
+1. **Azure**:
+   - Deploy as Azure App Service
+   - Use Azure Event Hubs as managed Kafka service
+   - Configure app settings for connection strings
 
-#### Azure Service Deployment
-1. Create an Azure App Service with .NET 9 runtime.
-2. Deploy the application using Azure DevOps pipelines or GitHub Actions.
-3. Configure connection strings and API keys in Application Settings.
-4. Set up Azure Event Hubs as a managed Kafka alternative.
+2. **AWS**:
+   - Deploy to EC2 or ECS containers
+   - Use MSK (Managed Streaming for Kafka)
+   - Configure environment variables for settings
 
-#### AWS Deployment
-1. Deploy using Elastic Beanstalk or ECS for containerized deployment.
-2. Use AWS MSK (Managed Streaming for Kafka) for the Kafka cluster.
-3. Configure environment variables for connection settings.
+3. **Kubernetes**:
+   - Package as container and deploy to Kubernetes cluster
+   - Use StatefulSets for Kafka brokers
+   - Configure with ConfigMaps and Secrets
 
-### Health Monitoring
-- The application exposes health endpoints at `/health` for monitoring.
-- Use your infrastructure's monitoring tools to check application status.
-- Configure alerts for service disruptions or high latency.
+### Production Considerations
+- Implement robust logging and monitoring
+- Configure proper retry policies and circuit breakers
+- Use managed Kafka services for production workloads
+- Implement health checks and automated scaling
+- Set up alerts for critical errors and performance degradation
 
 ## Additional Documentation
 
@@ -405,5 +414,3 @@ The application can be deployed as a service on various cloud platforms:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-```
