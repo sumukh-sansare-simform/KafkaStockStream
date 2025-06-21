@@ -19,7 +19,7 @@ public class Program
 
         var kafkaConfig = KafkaConfig.Load(config);
 
-        // Fetch Alpha Vantage API key and symbol from config
+        // Fetch API keys and symbols from config
         string apiKey = config["AlphaVantage:ApiKey"];  // Alpha Vantage API Key
         string symbol = config["AlphaVantage:Symbol"];  // Stock Symbol
 
@@ -36,7 +36,7 @@ public class Program
         var producerConfig = new ProducerConfig
         {
             BootstrapServers = kafkaConfig.BootstrapServers,
-            EnableIdempotence = true, // Ensures idempotent writes, which is generally a good practice.
+            EnableIdempotence = true, // Ensures idempotent writes
         };
 
         // Consumer config
@@ -92,7 +92,5 @@ public class Program
         await Task.WhenAll(ingestionTask, consumerTask);
 
         Console.WriteLine("Demo complete.");
-
     }
-    
 }

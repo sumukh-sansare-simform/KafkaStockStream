@@ -29,37 +29,54 @@ namespace KafkaStockFlow.Services
             }
         }
 
+        // Start consuming messages with manual offset commit
         public void StartConsuming(CancellationToken cancellationToken)
         {
-            _consumer.Subscribe(_topic);
+            // Subscribe to multiple topics if needed, or just one topic.
+            _consumer.Subscribe(new[] { _topic }); // Can add more topics in array
+
+            var processedMessages = 0;
 
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var result = _consumer.Consume(cancellationToken);
-                    if (result != null)
+                    try
                     {
-                        var trade = result.Message.Value;
+                        var result = _consumer.Consume(cancellationToken);
+                        if (result != null)
+                        {
+                            var trade = result.Message.Value;
 
-                        // Log consumed message
-                        _logger.LogInformation("Consumed trade: {Symbol} {Side} {Quantity} @ {Price}",
-                            trade.Symbol, trade.Side, trade.Quantity, trade.Price);
+                            // Log consumed trade
+                            _logger.LogInformation("Consumed trade: {Symbol} {Side} {Quantity} @ {Price}",
+                                trade.Symbol, trade.Side, trade.Quantity, trade.Price);
 
-                        // Write the trade to the file based on current date
-                        WriteTradeToFile(trade);
+                            // Write the trade to the file based on current date
+                            WriteTradeToFile(trade);
 
-                        // Manual commit for demonstration
-                        _consumer.Commit(result);
+                            // Commit the offset after processing the message
+                            _consumer.Commit(result);
+                            processedMessages++;
+                        }
+                    }
+                    catch (ConsumeException e)
+                    {
+                        _logger.LogError("Error while consuming: {Error}", e.Error.Reason);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError("Unexpected error: {Message}", e.Message);
                     }
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                _logger.LogError("Unexpected error during consume: {Message}", ex.Message);
+                _logger.LogInformation("Consumer operation cancelled");
             }
             finally
             {
+                _logger.LogInformation("Processed {ProcessedMessages} messages.", processedMessages);
                 _consumer.Close();
             }
         }
